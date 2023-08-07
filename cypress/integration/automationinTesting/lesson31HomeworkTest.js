@@ -4,25 +4,30 @@ context('Написание теста в рамках домашнего зад
 
     beforeEach(function () {
         mockRequests()
-        cy.intercept('GET', '**/branding', { fixture: 'automationinTesting/branding.json' }).as('branding')
-        cy.intercept('GET', '**/room', { fixture: 'automationinTesting/room.json' }).as('room')
-        cy.intercept('POST', '**/message', { statusCode: 201, fixture: 'automationinTesting/testmessage.json' }).as('message')
         cy.visit('/')
+        cy.intercept('POST', '**/message').as('message')
     })
 
     function fillForm() {
-        cy.wait(['@branding', '@room'])
-        cy.get('[data-testid="ContactName"]').type('Vasya')
-        cy.get('[data-testid="ContactEmail"]').type('email@mail.ru')
-        cy.get('[data-testid="ContactPhone"]').type('33344455512')
-        cy.get('[data-testid="ContactSubject"]').type('subject')
-        cy.get('[data-testid="ContactDescription"]').type('TextText')
-        cy.get('#submitContact').click()
+        cy.fixture('automationinTesting/testmessage.json').then((message) => {
+            cy.get('[data-testid="ContactName"]').type(message.name)
+            cy.get('[data-testid="ContactEmail"]').type(message.email)
+            cy.get('[data-testid="ContactPhone"]').type(message.phone)
+            cy.get('[data-testid="ContactSubject"]').type(message.subject)
+            cy.get('[data-testid="ContactDescription"]').type(message.description)
+            cy.get('#submitContact').click()
+        })
     }
 
     it('Тестирование корректности заполнения формы', () => {
         fillForm()
-        cy.wait('@message')
+        cy.wait('@message').should(xhr => {
+            expect(xhr.response.body).have.property('description', 'description test message')
+            expect(xhr.response.body).have.property('subject', 'subject')
+            expect(xhr.response.body).have.property('phone', '88005553535')
+            expect(xhr.response.body).have.property('email', 'email@mail.com')
+            expect(xhr.response.body).have.property('name', 'Vasya')
+        })
         cy.get('.contact').children().should('contain', 'Thanks for getting in touch Vasya!')
             .and('contain', 'subject')
     })

@@ -1,8 +1,7 @@
 {
-    "messageid": 1,
     "name": "Vasya",
-    "email": "email@mail.ru",
-    "phone": "33344455512",
+    "email": "email@mail.com",
+    "phone": "88005553535",
     "subject": "subject",
-    "description": "TextText"
+    "description": "description test message"
 }
